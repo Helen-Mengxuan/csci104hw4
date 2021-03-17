@@ -27,7 +27,7 @@ public:
     Value& getValue();
 
     virtual Node<Key, Value>* getParent() const;
-    virtual Node<Key, Value>* getLeft() const;
+    virtual Node<Key, Value>*  const;
     virtual Node<Key, Value>* getRight() const;
 
     void setParent(Node<Key, Value>* parent);
@@ -239,10 +239,12 @@ protected:
 
     // Provided helper functions
     virtual void printRoot (Node<Key, Value> *r) const;
-    virtual void nodeSwap( Node<Key,Value>* n1, Node<Key,Value>* n2) ;
+    virtual void nodeSwap( Node<Key,Value>* n1, Node<Key,Value>* n2);
 
     // Add helper functions here
-    void clear_helper(Node<Key, Value>* root)
+    void clear_helper(Node<Key, Value>* root);
+    int check_height(Node<Key, Value>* root);
+    static Node<Key, Value>* successor(Node<Key, Value>* current);
 
 
 protected:
@@ -262,17 +264,15 @@ Begin implementations for the BinarySearchTree::iterator class.
 template<class Key, class Value>
 BinarySearchTree<Key, Value>::iterator::iterator(Node<Key,Value> *ptr)
 {
-    // TODO
+    this->current_ = ptr;
 }
 
 /**
 * A default constructor that initializes the iterator to NULL.
 */
 template<class Key, class Value>
-BinarySearchTree<Key, Value>::iterator::iterator() :
-{
-    // TODO
-    current_ = NULL;
+BinarySearchTree<Key, Value>::iterator::iterator() : this->current_ = NULL; 
+{   
 }
 
 /**
@@ -304,7 +304,12 @@ bool
 BinarySearchTree<Key, Value>::iterator::operator==(
     const BinarySearchTree<Key, Value>::iterator& rhs) const
 {
-    // TODO
+    if(this->current_ == rhs->current_){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 /**
@@ -316,7 +321,12 @@ bool
 BinarySearchTree<Key, Value>::iterator::operator!=(
     const BinarySearchTree<Key, Value>::iterator& rhs) const
 {
-    // TODO
+    if(this->current_ != rhs->current_){
+        return true;
+    }
+    else{
+        return false;
+    }
 
 }
 
@@ -328,7 +338,15 @@ template<class Key, class Value>
 typename BinarySearchTree<Key, Value>::iterator&
 BinarySearchTree<Key, Value>::iterator::operator++()
 {
-    // TODO
+    Node<Key, Value>* next = BinarySearchTree<Key, Value>::successor();
+
+    /*a successor is not found*/
+    if(next == NULL){
+        return this->end();
+    }
+
+    this->current_ = next;
+    return this;
 
 }
 
@@ -618,6 +636,38 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     }
 }
 
+template<class Key, class Value>
+Node<Key, Value>*
+BinarySearchTree<Key, Value>::successor(Node<Key, Value>* current){
+
+    Node<Key, Value>* temp = current;
+
+    if(current->right_ != NULL){ 
+        
+        temp = current->right_; 
+
+        while(temp->left_ != NULL){ 
+            temp = temp->left_; 
+        }
+        /* out of while loop due to temp->right_ == NULL */
+        return temp;
+    }
+    else if( current->right_ == NULL ){
+
+        while(true){
+           
+            if( temp->item_.first == temp->parent_->left_->item_.first ){
+                /*first left child found*/
+                temp = temp->parent_;
+                return temp;
+            }
+            /*else keep going up*/
+            temp = temp->parent_;
+
+        }
+    }
+
+}
 
 
 template<class Key, class Value>
@@ -627,7 +677,7 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
 
     /*if current does not have a predecessor, this function would not be called*/
 
-    Node<Key, Value>* temp = current; //15
+    Node<Key, Value>* temp = current; 
 
     if(current->left_ != NULL){ 
         
@@ -648,6 +698,7 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
                 temp = temp->parent_;
                 return temp;
             }
+            /*else keep going up*/
             temp = temp->parent_; 
         }
     }
@@ -660,26 +711,34 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
 template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::clear_helper(Node<Key, Value>* root){
 
-    Node<Key, Value>* temp = root;
+    Node<Key, Value>* temp = this->root_;
 
     /*leaf case*/
     if( (temp->right_ == NULL) && (temp->left_ == NULL) ){
 
         if(temp->item_.first < temp->parent_->item_.first){
             /*left child*/
+            temp->parent_->left_ = NULL;
             delete temp;
             return;
         }
         else if(temp->item_.first > temp->parent_->item_.first){
             /*left child*/
+            temp->parent_->right_ = NULL;
             delete temp;
             return; 
         }
-
     }
 
-    clear_helper(temp->left_); 
-    clear_helper(temp->right_); 
+    if(temp->left_ != NULL){
+        /*there is a left child*/
+        clear_helper(temp->left_); 
+    }
+
+    if(temp->right_ != NULL){
+        /*there is a right child*/
+        clear_helper(temp->right_);
+    }
 
     if(temp->item_.first == root->item_.first){
         /*root node reached*/
@@ -764,15 +823,77 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
 
 }
 
+/* Helper function for isBalance() */
+/*if BST is balanced, height of root (pos. int) should be returned*/
+/*if not balanced, -1 should be returned*/
+template<typename Key, typename Value>
+int BinarySearchTree<Key, Value>::check_height(Node<Key, Value>* root){
+
+    Node<Key, Value>* temp = this->root_;
+
+    /*leaf case, return height = 1*/
+    if( (temp->right_ == NULL) && (temp->left_ == NULL) ){
+        return 1;
+    }
+
+    int h_l = 0, h_r = 0;
+
+    if(temp->left_ != NULL){
+        /*there is a left child*/
+        h_l = check_height(temp->left_);  
+    }
+
+    if(temp->right_ != NULL){
+        /*there is a right child*/
+        h_r = check_height(temp->right_); 
+    }
+
+    /*check if there is an unbalanced child*/
+    if( (h_l == -1) || (h_r == -1) ){
+        /*then this node is also unbalanced*/
+        return -1; 
+    }
+
+    /*check if this node is balanced*/
+    if( (h_l == h_r) || ((h_l - h_r) == 1)|| ((h_r - h_l) == 1) ){
+        int curr_h = 0;
+        if(h_l > h_r){
+            curr_h  = h_l+1;
+        }
+        if(h_r >= h_l){
+            curr_h  = h_r+1;
+        }
+        /*return height of current node*/
+        return curr_h; 
+    }
+
+    /*check if this node is unbalanced*/
+    if( (h_l - h_r) > 1 || (h_l - h_r) < 1 ){
+        return -1; 
+    }
+}
+
 /**
  * Return true iff the BST is balanced.
  */
 template<typename Key, typename Value>
 bool BinarySearchTree<Key, Value>::isBalanced() const
 {
-    /*for now*/
-    return true;
 
+    if(empty()){
+        return true;
+    }
+
+    int result = check_height(this->root_);
+
+    if(result == -1){
+        /*a part of the tree is unbalanced*/
+        return false;
+    }
+    else{
+        /*balances tree; result = root's height*/
+        return true;
+    }
 }
 
 
