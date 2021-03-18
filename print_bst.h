@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <cstdint>
+#include "bst.h"
 
 #ifndef PRINT_BST_H
 #define PRINT_BST_H
@@ -17,6 +18,7 @@
 // 1 means that it is the root.
 // Returns -1 (not found) if the distance is more than PPBST_MAX_HEIGHT,
 // or -2 if the tree is inconsistent.
+
 template<typename Key, typename Value>
 int getNodeDepth(BinarySearchTree<Key, Value> const & tree, Node<Key, Value> * root, Node<Key, Value> * node)
 {
