@@ -452,14 +452,16 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
                 /*leaf node reached, temp = leaf node*/
                 break;
             }   
-            temp = temp->getLeft(); 
+            temp = temp->getLeft();
+            continue; 
         }
         else if(keyValuePair.first > temp->getKey()){ 
              if(temp->getRight() == NULL){
                  /*leaf node reached, temp = leaf node*/
                  break;
              }
-             temp = temp->getRight(); 
+             temp = temp->getRight();
+             continue;
         }
         else{
             /*keyValuePair.first == temp->getKey() */
