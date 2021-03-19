@@ -28,7 +28,6 @@ int main(){
     mytree.insert(N12);
     mytree.insert(N2);
     mytree.insert(N6);
-    mytree.insert(N2);
     mytree.insert(N10);
     mytree.insert(N14);
     mytree.insert(N1);
@@ -39,6 +38,13 @@ int main(){
     mytree.insert(N11);
     mytree.insert(N13);
     mytree.insert(N15);
+    if(mytree.isBalanced()){
+        cout << "------------------------------------------------------------Balanced tree" << endl;
+    }
+    else{
+        cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
+    }
+
 
     mytree.remove(2);
     mytree.print();
@@ -51,10 +57,24 @@ int main(){
     mytree.remove(14);
     mytree.print();
     mytree.remove(9);
+    if(mytree.isBalanced()){
+        cout << "------------------------------------------------------------Balanced tree" << endl;
+    }
+    else{
+        cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
+    }
     mytree.print();
     mytree.remove(13);
     mytree.print();
     mytree.remove(11);
+    mytree.print();
+    mytree.remove(1);
+    if(mytree.isBalanced()){
+        cout << "------------------------------------------------------------Balanced tree" << endl;
+    }
+    else{
+        cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
+    }
     mytree.print();
     mytree.remove(7);
     mytree.print();
@@ -68,6 +88,12 @@ int main(){
     mytree.print();
     mytree.remove(15);
     mytree.print();
+    if(mytree.isBalanced()){
+        cout << "------------------------------------------------------------Balanced tree" << endl;
+    }
+    else{
+        cout << "------------------------------------------------------------NOT Balanced tree" << endl;
+    }
     mytree.remove(1);
     mytree.print();
 
