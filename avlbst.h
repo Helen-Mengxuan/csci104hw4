@@ -116,7 +116,6 @@ AVLNode<Key, Value> *AVLNode<Key, Value>::getRight() const
   -----------------------------------------------
 */
 
-
 template <class Key, class Value>
 class AVLTree : public BinarySearchTree<Key, Value>
 {
@@ -131,35 +130,144 @@ protected:
     void pre_rotate(AVLNode<Key,Value>* g, AVLNode<Key,Value>* p, AVLNode<Key,Value>* n);
     void left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
     void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
-
 };
-
 
 template<class Key, class Value>
 void left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
 
-    /*deal with the upper layer*/
-    down->setParent(up->getParent());
+    /* 1. deal with the upper layer*/
+    if( up->getParent() != NULL ){
 
-    if( up == up->getParent()->getLeft() ){
-        /*up is a left child*/
-        up->getParent()->setLeft(p);
+        down->setParent(up->getParent());
+
+        if( up == up->getParent()->getLeft() ){
+            /*up is a left child*/
+            up->getParent()->setLeft(down);
+        }
+        else if( up == up->getParent()->getRight() ){
+            /*up is a right child*/
+            up->getParent()->setRight(down);
+        }   
     }
-    else if( up == up->getParent()->getRight() ){
-        /*up is a right child*/
-        up->getParent()->setRight(p);
+    else{
+        /*there is no relevant upper level*/
+        down->setParent(NULL);
     }
 
-    /*deal with the lower layer*/
-    up->setLeft(p->getRight());
+    /* 2. deal with the lower layer*/
+    if( down->getLeft() != NULL ){
+        up->setRight(down->getLeft());
+        down->getRight()->setParent(up);       
+    }
+    else{
+        /*there is no relevant lower level*/
+        up->setRight(NULL);
+    }
 
-    
+    /* 3. between rotating nodes*/
+    up->setParent(down);
+    down->setLeft(up);
 
-    
+    /*4. check NULL for children, then recalculate height*/
+
+    if( up->getLeft() == NULL && up->getRight() == NULL ){
+        /*leaf node*/  
+        up->setHeight(1);
+    }
+    else if( up->getLeft() == NULL && up->getRight() != NULL ){
+        /*right child exists*/
+        up->setHeight(up->getRight()->getHeight()+1);
+    }
+    else if( up->getLeft() != NULL && up->getRight() == NULL ){
+        /*left child exists*/
+        up->setHeight(up->getLeft()->getHeight()+1);
+    }
+    else{
+        /*both children exists*/
+        int up_now = std::max(up->getLeft()->getHeight(),up->getRight()->getHeight()) + 1;
+        up->setHeight(up_now);
+    }
+
+    /*left rotation, left child(g) always exist */
+    if( down->getRight() == NULL ){
+        /*Right NOT exists*/
+        down->setHeight(down->getLeft()getHeight()+1);
+    }
+    else{
+         /*both children exists*/
+        int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
+        down->setHeight(down_now);
+    }
 
 }
 
+template<class Key, class Value>
+void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
+    /* 1. deal with the upper layer*/
+    if( up->getParent() != NULL ){
 
+        down->setParent(up->getParent());
+
+        if( up == up->getParent()->getLeft() ){
+            /*up is a left child*/
+            up->getParent()->setLeft(down);
+        }
+        else if( up == up->getParent()->getRight() ){
+            /*up is a right child*/
+            up->getParent()->setRight(down);
+        }   
+    }
+    else{
+        /*there is no relevant upper level*/
+        down->setParent(NULL);
+    }
+
+    /* 2. deal with the lower layer*/
+    if( down->getRight() != NULL ){
+        up->setLeft(down->getRight());
+        down->getRight()->setParent(up);        
+    }
+    else{
+        /*there is no relevant lower level*/
+        up->setLeft(NULL);
+    }
+
+
+    /* 3. between rotating nodes*/
+    up->setParent(down);
+    down->setRight(up);
+
+    /*4. check NULL for children, then recalculate height*/
+
+    if( up->getLeft() == NULL && up->getRight() == NULL ){
+        /*leaf node*/  
+        up->setHeight(1);
+    }
+    else if( up->getLeft() == NULL && up->getRight() != NULL ){
+        /*right child exists*/
+        up->setHeight(up->getRight()->getHeight()+1);
+    }
+    else if( up->getLeft() != NULL && up->getRight() == NULL ){
+        /*left child exists*/
+        up->setHeight(up->getLeft()->getHeight()+1);
+    }
+    else{
+        /*both children exists*/
+        int up_now = std::max(up->getLeft()->getHeight(),up->getRight()->getHeight()) + 1;
+        up->setHeight(up_now);
+    }
+
+    /*right rotation, right child(g) always exist */
+    if( down->getLeft() == NULL ){
+        /*Left NOT exists*/
+        down->setHeight(down->getRight()getHeight()+1);
+    }
+    else{
+        /*both children exists*/
+        int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
+        down->setHeight(down_now);
+    }
+}
 
 /*this function should call the rotation functions and finish rotation*/
 template<class Key, class Value>
