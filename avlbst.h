@@ -130,6 +130,7 @@ protected:
     void pre_rotate(AVLNode<Key,Value>* g, AVLNode<Key,Value>* p, AVLNode<Key,Value>* n);
     void left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
     void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
+    void remove_fix(AVLNode<Key,Value>* n);
 };
 
 template<class Key, class Value>
@@ -203,6 +204,7 @@ void left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
 
 template<class Key, class Value>
 void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
+
     /* 1. deal with the upper layer*/
     if( up->getParent() != NULL ){
 
@@ -222,6 +224,7 @@ void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
         down->setParent(NULL);
     }
 
+
     /* 2. deal with the lower layer*/
     if( down->getRight() != NULL ){
         up->setLeft(down->getRight());
@@ -236,6 +239,7 @@ void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
     /* 3. between rotating nodes*/
     up->setParent(down);
     down->setRight(up);
+
 
     /*4. check NULL for children, then recalculate height*/
 
@@ -327,7 +331,7 @@ void AVLTree<Key, Value>::insert_fix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* 
         pre_rotate(g, p, n);
         return;
     }
-}9
+}
 
 /*insert and rotate to fix balance*/
 template<class Key, class Value>
@@ -405,8 +409,208 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
 template<class Key, class Value>
 void AVLTree<Key, Value>:: remove(const Key& key)
 {
-    // TODO
+
+    bool presence = true;
+
+    /*find the node with key*/
+    AVLNode<Key,Value>* temp = static_cast<AVLNode<K,V>*>(this->internalFind(key));
+
+    /*BST delete*/
+
+    /*if cannot find the node or empty tree, do nothing*/
+    if(temp == NULL){
+        return;
+    }
+    
+    /*now temp is a pointer to the AVLNode to be removed*/
+
+    /* temp->getKey() == key */
+    if( temp->getKey() != key ){
+        std::cerr << "incorrect node but should be correct!" << std::endl;
+    }
+
+    /*if leaf node*/
+    if( (temp->getRight() == NULL) && (temp->getLeft() == NULL) ){
+
+        /*root is the only node*/
+        if(temp->getParent() == NULL){
+            this->root_ = NULL;
+        }
+        /*Left child*/
+        else if(temp->getKey() < temp->getParent()->getKey()){
+            temp->getParent()->setLeft(NULL);
+        }
+        /*Right child*/
+        else if(temp->getKey() > temp->getParent()->getKey()){
+            temp->getParent()->setRight(NULL);;
+        }
+    }
+    /*if 1 child*/
+    else if( (temp->getRight() == NULL) || (temp->getLeft() == NULL) ){
+
+        /*the child is left child*/
+        if( temp->getLeft() != NULL ){
+
+        /*promote the child*/
+            temp->getLeft()->setParent(temp->getParent());
+
+            /*removing node*/
+            if(temp->getParent() == NULL){
+                this->root_ = temp->getLeft();               
+            }
+            else if(temp->getKey() < temp->getParent()->getKey()){
+                /*temp is a left child*/
+                temp->getParent()->setLeft(temp->getLeft());
+            }
+            else if( temp->getKey() > temp->getParent()->getKey() ){
+                /*temp is a right child*/
+                temp->getParent()->setRight(temp->getLeft());
+            }
+        }
+        /*the child is right child*/
+        else if( temp->getRight() != NULL){
+
+            temp->getRight()->setParent(temp->getParent());
+
+            /*removing node*/
+            if(temp->getParent() == NULL){
+                this->root_ = temp->getRight();           
+            }
+            else if(temp->getKey() < temp->getParent()->getKey()){
+                /*temp is a left child*/
+                temp->getParent()->setLeft(temp->getRight());
+            }
+            else if( temp->getKey() > temp->getParent()->getKey()){
+                /*temp is a right child*/
+                temp->getParent()->setRight(temp->getRight());
+            }
+        }
+    }
+    /*if 2 children*/
+    else if( (temp->getRight() != NULL) && (temp->getLeft() != NULL) ){
+
+        AVLNode<Key,Value>* pre = static_cast<AVLNode<K,V>*>(predecessor(temp));
+
+        /*predecessor is either temp's left child or always a right child of a parent*/
+
+        this->nodeSwap(pre, temp); /*now pre is temp, both are AVLnodes*/
+
+        /*always true: temp->getRight() == NULL */
+        /*if predcessor is a leaf node, temp is a leaf node after swap*/
+        if( (temp->getLeft() == NULL) && (temp->getRight() == NULL) ){
+
+            if(pre->getKey() == temp->getParent()->getKey()){
+                /*now pre is the parent, temp is left child*/
+                temp->getParent()->setLeft(NULL);
+            }
+            else{
+                /*pre is upper than parent, temp is right child*/
+                temp->getParent()->setRight(NULL);
+            }
+
+        }    
+        /*else predecessor has a child, its child must be a left child
+        a right child would have been the predecessor*/
+        else if( (temp->getLeft() != NULL) ){
+
+            /*update this left child's parent pointer*/
+            temp->getLeft()->setParent(temp->getParent());
+
+            if(pre->getKey() == temp->getParent()->getKey()){
+                /*pre is the parent, temp is left child*/
+                temp->getParent()->setLeft(temp->getLeft());
+            }    
+            else{
+                /*pre is upper than parent, temp is right child*/
+                temp->getParent()->setRight(temp->getLeft());
+            }           
+        }
+
+    /*all pointers updated, preparing to delete temp*/    
+    AVLNode<Key,Value>* p = temp->getParent();
+    delete temp;
+    this->remove_fix(p);
 }
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::remove_fix(AVLNode<Key,Value>* n){
+
+    /*if the node removed is the root*/
+    if( n == NULL){
+        /*now empty tree*/
+        return;
+    }
+
+    int nh_ori = n->getHeight();
+    int nh_now = std::max(n->getLeft()->getHeight(),n->getRight()->getHeight()) + 1;
+
+    /*case 1, n is unbalanced*/
+    if( abs( n->getLeft()->getHeight() - n->getRight()->getHeight() ) > 1 ){
+
+        int c_id = 0;
+
+        /*find the taller of n's children*/
+        if( n->getLeft()->getHeight() > n->getRight()->getHeight() ){
+            /*left child has greater height*/
+            AVLNode<Key,Value>* c = n->getLeft();
+            c_id = 1;
+        }
+        else{ /*then right child must has greater height*/
+            AVLNode<Key,Value>* c = n->getRight();
+            c_id = 2;
+        }
+
+        /*find the taller of n's grandchildren/c's chilren*/
+        if( c->getLeft()->getHeight() > c->getRight()->getHeight() ){
+            /*c's left child has greater height*/
+            AVLNode<Key,Value>* g = c->getLeft();
+        }
+        else if( c->getLeft()->getHeight() < c->getRight()->getHeight() ){
+            /*c's left child has greater height*/
+            AVLNode<Key,Value>* g = c->getRight();
+        }
+        else{ /*need to break tie with zig-zig*/
+
+            if( c_id == 1 ){
+                /*c is n's left child, so g needs to be c's left child*/
+                AVLNode<Key,Value>* g = c->getLeft();
+            }
+            else if( c_id == 2 ){
+                /*c is n's right child, so g needs to be c's right child*/
+                AVLNode<Key,Value>* g = c->getRight();
+            }
+            else if( c_id == 0 ){
+                std::cerr << "n's child c has id error!" << std::endl; 
+            }
+        }
+
+        /*now pointers n, c, g prepared.*/
+        pre_rotate(n, c, g);
+
+        /*rotation performed and all relavent heights updated*/
+        /*now recurse to check upper levels*/
+        AVLNode<Key,Value>* p = n->getParent();
+        remove_fix(p);
+
+    }
+    /*case 2, n's height unchanged, tree still balanced, done!*/
+    else if( nh_ori == nh_now ){
+        /*n's height not changed, don't worry about upper levels*/
+        return;
+    }
+    /*case 3, n changed but still balanced*/
+    else if( abs( n->getLeft()->getHeight() - n->getRight()->getHeight() ) <= 1 ){
+        /*update height of n*/
+        n->setHeight(nh_now);
+        /*keep moving up to find unbalanced node*/
+        /*if all nodes above are balanced, base(root)case will trigger and return*/
+        AVLNode<Key,Value>* p = n->getParent();
+        remove_fix(p);
+    }
+
+
+}
+
 
 template<class Key, class Value>
 void AVLTree<Key, Value>::nodeSwap( AVLNode<Key,Value>* n1, AVLNode<Key,Value>* n2)
