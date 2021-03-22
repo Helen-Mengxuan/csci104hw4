@@ -140,6 +140,7 @@ void BinarySearchTree<Key, Value>::printRoot (Node<Key, Value>* root) const
 			// note; the iterator will traverse in sorted order so values should get the same placeholders between
 			// different calls as long as the tree is the same
 			valuePlaceholders.insert(std::make_pair(treeIter->first, nextPlaceHolderVal++));
+
 		}
 
 	}
@@ -170,7 +171,7 @@ void BinarySearchTree<Key, Value>::printRoot (Node<Key, Value>* root) const
 			else
 			{
 				uint16_t placeholder = valuePlaceholders[currRowNodes[elementIndex]->getItem().first];
-				std::cout << "[" << std::setfill('0') << std::setw(2) << placeholder << "]";
+				std::cout << "[" << std::setfill('0') << std::setw(2) << placeholder << "]";			
 			}
 
 			if(elementIndex != ((uint16_t)(numElements - 1)))
@@ -269,6 +270,7 @@ void BinarySearchTree<Key, Value>::printRoot (Node<Key, Value>* root) const
 		std::cout << "Tree Placeholders:------------------" << std::endl;
 		for(typename std::map<Key, uint8_t>::iterator placeholdersIter = valuePlaceholders.begin(); placeholdersIter != valuePlaceholders.end(); ++placeholdersIter)
 		{
+
 			std::cout << '[' << std::setfill('0') << std::setw(2) << ((uint16_t)placeholdersIter->second) << "] -> ";
 
 			// print element with original cout flags

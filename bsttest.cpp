@@ -45,6 +45,7 @@ int main(){
         cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
     }
 
+    mytree.print();
 
     mytree.remove(2);
     mytree.print();
@@ -53,6 +54,9 @@ int main(){
     mytree.remove(6);
     mytree.print();
     mytree.remove(10);
+    cout << endl;
+    cout << "gap btw remove 10 and print" << endl;
+    cout << endl;
     mytree.print();
     mytree.remove(14);
     mytree.print();

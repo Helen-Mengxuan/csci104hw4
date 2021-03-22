@@ -137,6 +137,17 @@ template<class Key, class Value>
 void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down)
 {
 
+    /*Because root node's parent is not root_ */
+    bool up_root = false;
+    if( this->root_ == up ){
+        std::cerr << "up is root " << std::endl;
+        up_root = true;
+    }
+
+    std::cerr << "left_rotate ran " << std::endl;
+    std::cerr << "up key " << up->getKey() << std::endl;
+    std::cerr << "down key " << down->getKey() << std::endl;
+
     /* 1. deal with the upper layer*/
     if( up->getParent() != NULL ){
 
@@ -159,7 +170,7 @@ void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>
     /* 2. deal with the lower layer*/
     if( down->getLeft() != NULL ){
         up->setRight(down->getLeft());
-        down->getRight()->setParent(up);       
+        down->getLeft()->setParent(up);       
     }
     else{
         /*there is no relevant lower level*/
@@ -169,6 +180,12 @@ void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>
     /* 3. between rotating nodes*/
     up->setParent(down);
     down->setLeft(up);
+
+    /*if up were root, now down is root*/
+    if( up_root == true){
+        std::cerr << "now down is root " << std::endl;
+        this->root_ = down;
+    }
 
     /*4. check NULL for children, then recalculate height*/
 
@@ -200,11 +217,24 @@ void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>
         int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
         down->setHeight(down_now);
     }
+
+    
+
 }
 
 template<class Key, class Value>
 void AVLTree<Key, Value>::right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down)
 {
+
+    /*Because root node's parent is not root_ */
+    bool up_root = false;
+    if( this->root_ == up ){
+        up_root = true;
+    }
+
+    std::cerr << "right_rotate ran " << std::endl;
+    std::cerr << "up key " << up->getKey() << std::endl;
+    std::cerr << "down key " << down->getKey() << std::endl;
 
     /* 1. deal with the upper layer*/
     if( up->getParent() != NULL ){
@@ -240,6 +270,11 @@ void AVLTree<Key, Value>::right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value
     /* 3. between rotating nodes*/
     up->setParent(down);
     down->setRight(up);
+
+    /*if up were root, now down is root*/
+    if( up_root == true){
+        this->root_ = down;
+    }
 
 
     /*4. check NULL for children, then recalculate height*/
@@ -278,7 +313,7 @@ void AVLTree<Key, Value>::right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value
 template<class Key, class Value>
 void AVLTree<Key, Value>::pre_rotate(AVLNode<Key,Value>* g, AVLNode<Key,Value>* p, AVLNode<Key,Value>* n)
 {
-
+    
     if( (g->getLeft() == p) && (p->getLeft() == n)){
         /*left zig-zig needs right rotation*/
         right_rotate(g, p);
@@ -308,6 +343,9 @@ template<class Key, class Value>
 void AVLTree<Key, Value>::insert_fix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n)
 {
 
+    std::cerr << "p's value " << p->getValue() << std::endl;
+    std::cerr << "n's value " << n->getValue() << std::endl;
+
     /*base case, root reached*/
     if(p == NULL || p->getParent() == NULL){
         return;
@@ -327,6 +365,7 @@ void AVLTree<Key, Value>::insert_fix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* 
     else if(g->getRight() == NULL){
         /*g has a left child*/
         gh_now = g->getLeft()->getHeight() + 1;
+        std::cerr << " update gh for insert 5 *** " << std::endl;
         g_status = 0;
     }
     else if( (g->getRight() != NULL) && g->getLeft() != NULL){
@@ -341,7 +380,7 @@ void AVLTree<Key, Value>::insert_fix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* 
         return;
     }
 
-    /*check balance*/
+    /*check balance for g*/
     bool balance = false;
     if( g_status == 0){
         /*g only has a left child*/
@@ -371,6 +410,10 @@ void AVLTree<Key, Value>::insert_fix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* 
     /*case 3, g unbalanced, fix, balance */
     if( balance == false ){
         /*determine rotation type, then rotate*/
+        std::cerr << "g's key " << g->getValue() << std::endl;
+        std::cerr << "p's key " << p->getValue() <<std::endl;
+        std::cerr << "n's key " << n->getValue() <<std::endl;
+        
         pre_rotate(g, p, n);
         return;
     }
@@ -387,13 +430,13 @@ void AVLTree<Key, Value>::insert(const std::pair<const Key, Value> &new_item)
         return;
     }
     /*if root's key = insert's key, update root's value to insert*/
-    if( this->root_->getKey() == new_item.first){
+    /*if( this->root_->getKey() == new_item.first){
         this->root_->setValue(new_item.second);
         return;
-    }
+    }*/
 
     /*root_ is a Node, but point to an AVLNode*/
-    AVLNode<Key,Value>* temp = static_cast<AVLNode<Key,Value>*>(this->root_); 
+    AVLNode<Key,Value>* temp = static_cast<AVLNode<Key,Value>*>(this->root_);
 
     while(true){
         if( new_item.first < temp->getKey() ){ 
@@ -416,13 +459,14 @@ void AVLTree<Key, Value>::insert(const std::pair<const Key, Value> &new_item)
                 }
             }   
             temp = temp->getLeft();
-            continue; 
         }
-        else if(new_item.first > temp->getKey()){ 
+        else if(new_item.first > temp->getKey()){
             if(temp->getRight() == NULL){
-                /*target node reached, insert new left node*/
+
+                /*target node reached, insert new right node*/
                 AVLNode<Key,Value>* node_r = new AVLNode<Key,Value>(new_item.first, new_item.second, temp);
                 temp->setRight(node_r);
+
                 /*insert finished, temp is the parent of the new node*/
 
                 /*check parent*/
@@ -439,10 +483,9 @@ void AVLTree<Key, Value>::insert(const std::pair<const Key, Value> &new_item)
                 return;
              }
              temp = temp->getRight();
-             continue;
         }
         else{
-            /*new_item.first == temp->getKey() */
+            /* new_item.first == temp->getKey() */
             temp->setValue(new_item.second);
             break;
         }
@@ -463,48 +506,60 @@ void AVLTree<Key, Value>::remove_fix(AVLNode<Key,Value>* n)
 {
 
     /*if the node removed is the root, or root node is reached*/
+    /*triggered by n = root's parent*/
     if( n == NULL){
-        /*now empty tree*/
         return;
     }
+
+    std::cerr << "remove_fix n " << n->getKey() << std::endl;
 
     int nh_ori = n->getHeight(); 
 
     /*n's new height*/
     int nh_now, n_status;
-    /*n is a parent so it must have a child*/
-    if( n->getLeft() == NULL){
+
+    if( (n->getLeft() == NULL) && (n->getRight() == NULL) ){
+        nh_now = 1;
+        n_status = 0;
+    }
+    else if( (n->getLeft() == NULL) && (n->getRight() != NULL) ){
         /*n has a right child*/
         nh_now = n->getRight()->getHeight() + 1;
-        n_status = 1;
+        n_status = 2;
     }
-    else if(n->getRight() == NULL){
+    else if( (n->getRight() == NULL) && (n->getLeft() != NULL) ){
         /*n has a left child*/
         nh_now = n->getLeft()->getHeight() + 1;
-        n_status = 0;
+        n_status = 1;
     }
     else if( (n->getRight() != NULL) && (n->getLeft() != NULL) ){
         /*n has both children*/
         nh_now = std::max(n->getLeft()->getHeight(),n->getRight()->getHeight()) + 1;
-        n_status = 2;
+        n_status = 3;
     }
 
-    /*check balance*/
-    bool balance = false;
+    /*check n's balance*/
+    bool balance = false; 
 
-    if( n_status == 0){
+    if( n_status == 0 ){
+        /*n has no children*/
+        balance = true;
+    }
+    else if( n_status == 1){
         /*n only has a left child*/
+        std::cerr << "5 only has a left child" << std::endl;
         if( n->getLeft()->getHeight() == 1 ){
             balance = true;
         }        
     }
-    else if( n_status == 1 ){
+    else if( n_status == 2 ){
         /*n only has a right child*/
         if( n->getRight()->getHeight() == 1 ){
             balance = true;
         }
     }
-    else if( n_status == 2 ){
+    else if( n_status == 3 ){
+        /*n only has both children*/
         if( abs( n->getLeft()->getHeight() - n->getRight()->getHeight() ) <= 1 ){
             balance = true;
         }
@@ -513,54 +568,77 @@ void AVLTree<Key, Value>::remove_fix(AVLNode<Key,Value>* n)
     /*case 1, n is unbalanced*/
     if( balance == false ){
 
-        int c_id = 0;
+        int c_id = 0; /*left = 1, right = 2*/
         AVLNode<Key,Value>* c;
 
         /*find the taller of n's children*/
-        if( n->getLeft()->getHeight() > n->getRight()->getHeight() ){
-            /*left child has greater height*/
+        if( n_status == 1 ){
+            /*n only has a left child*/
             c = n->getLeft();
             c_id = 1;
         }
-        else{ /*then right child must has greater height*/
+        else if( n_status == 2 ){
+            /*n only has a right child*/
             c = n->getRight();
             c_id = 2;
         }
-
+        else{
+            if( n->getLeft()->getHeight() > n->getRight()->getHeight() ){
+                /*left child has greater height*/
+                c = n->getLeft();
+                c_id = 1;
+            }
+            else{ /*then right child must has greater height*/
+                c = n->getRight();
+                c_id = 2;
+            }
+        }
         AVLNode<Key,Value>* g;
 
-        /*find the taller of n's grandchildren/c's chilren*/
-        if( c->getLeft()->getHeight() > c->getRight()->getHeight() ){
-            /*c's left child has greater height*/
+        /*if c only have one child*/
+        if( c->getLeft() != NULL && c->getRight() == NULL ){
+            /*c only has a left child*/
             g = c->getLeft();
         }
-        else if( c->getLeft()->getHeight() < c->getRight()->getHeight() ){
-            /*c's left child has greater height*/
+        else if( c->getLeft() == NULL && c->getRight() != NULL ){
+            /*c only has a right child*/
             g = c->getRight();
         }
-        else{ /*need to break tie with zig-zig*/
+        else{ /*c has both children*/
 
-            if( c_id == 1 ){
-                /*c is n's left child, so g needs to be c's left child*/
+            /*find the taller of n's grandchildren/c's chilren*/
+
+            if( c->getLeft()->getHeight() > c->getRight()->getHeight() ){
+                /*c's left child has greater height*/
                 g = c->getLeft();
             }
-            else if( c_id == 2 ){
-                /*c is n's right child, so g needs to be c's right child*/
+            else if( c->getLeft()->getHeight() < c->getRight()->getHeight() ){
+                /*c's left child has greater height*/
                 g = c->getRight();
             }
-            else if( c_id == 0 ){
-                std::cerr << "n's child c has id error!" << std::endl; 
+            else{ /*break tie with zig-zig!*/
+                if( c_id == 1 ){
+                    /*c is n's left child, so g needs to be c's left child*/
+                    g = c->getLeft();
+                }
+                else if( c_id == 2 ){
+                    /*c is n's right child, so g needs to be c's right child*/
+                    g = c->getRight();
+                }
+                else if( c_id == 0 ){
+                    std::cerr << "n's child c has id error!" << std::endl; 
+                }
             }
         }
 
         /*now pointers n, c, g prepared.*/
-        pre_rotate(n, c, g); //n = 10
+        pre_rotate(n, c, g); 
 
         AVLNode<Key,Value>* p;
 
         /*rotation performed and all relavent heights updated*/
         /*find the highest among g,c,n and recurse to check upper levels*/
-        /*n is rotated down, so higher one must be in c or g, without tie*/
+        /* n is rotated down, so higher one must be in c or g, without tie*/
         if( c->getHeight() > g->getHeight() ){
             /*after zig-zig, c higher*/
             p = c->getParent();
@@ -570,7 +648,7 @@ void AVLTree<Key, Value>::remove_fix(AVLNode<Key,Value>* n)
             p = g->getParent();
         }
 
-        remove_fix(p); //20
+        remove_fix(p); 
     }
     /*case 2, n's height unchanged, tree still balanced, done!*/
     else if( nh_ori == nh_now ){
@@ -621,7 +699,7 @@ void AVLTree<Key, Value>::remove(const Key& key)
         }
         /*Right child*/
         else if(temp->getKey() > temp->getParent()->getKey()){
-            temp->getParent()->setRight(NULL);;
+            temp->getParent()->setRight(NULL);
         }
     }
     /*if 1 child*/
@@ -674,6 +752,8 @@ void AVLTree<Key, Value>::remove(const Key& key)
         this->nodeSwap(pre, temp); /*now pre is temp, both are AVLnodes*/
         //temp = 20, pre = 12
 
+        std::cerr << "pre = " << pre->getKey() << " temp = " << temp->getKey() << std::endl;
+
         /*always true: temp->getRight() == NULL */
         /*if predcessor is a leaf node, temp is a leaf node after swap*/
         if( (temp->getLeft() == NULL) && (temp->getRight() == NULL) ){
@@ -709,6 +789,9 @@ void AVLTree<Key, Value>::remove(const Key& key)
 
     /*all pointers updated, preparing to delete temp*/    
     AVLNode<Key,Value>* p = temp->getParent();
+
+    std::cerr << "removed item: " << temp->getKey() << std::endl;
+    
     delete temp;
     remove_fix(p);
 }

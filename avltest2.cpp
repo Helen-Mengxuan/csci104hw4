@@ -61,15 +61,27 @@ int main(){
     }
 
 
+    mytree.remove(1);
+    mytree.print();
     mytree.remove(2);
+    mytree.print();
+    mytree.remove(3);
     mytree.print();
     mytree.remove(4);
     mytree.print();
+    mytree.remove(5);
+    mytree.print();
     mytree.remove(6);
+    if(mytree.isBalanced()){
+        cout << "------------------------------------------------------------Balanced tree" << endl;
+    }
+    else{
+        cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
+    }
     mytree.print();
-    mytree.remove(10);
+    mytree.remove(7);
     mytree.print();
-    mytree.remove(14);
+    mytree.remove(8);
     mytree.print();
     mytree.remove(9);
     if(mytree.isBalanced()){
@@ -79,30 +91,18 @@ int main(){
         cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
     }
     mytree.print();
-    mytree.remove(13);
-    mytree.print();
-    mytree.remove(11);
-    mytree.print();
-    mytree.remove(1);
-    if(mytree.isBalanced()){
-        cout << "------------------------------------------------------------Balanced tree" << endl;
-    }
-    else{
-        cout << "------------------------------------------------------------   NOT Balanced tree" << endl;
-    }
-    mytree.print();
-    mytree.remove(7);
+    mytree.remove(10);
     cout << endl;
     cout << "gap btw remove and print" << endl;
     cout << endl;
     mytree.print();
-    mytree.remove(8);
-    mytree.print();
-    mytree.remove(5);
-    mytree.print();
-    mytree.remove(3);
+    mytree.remove(11);
     mytree.print();
     mytree.remove(12);
+    mytree.print();
+    mytree.remove(13);
+    mytree.print();
+    mytree.remove(14);
     mytree.print();
     mytree.remove(15);
     mytree.print();

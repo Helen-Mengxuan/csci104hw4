@@ -338,8 +338,8 @@ typename BinarySearchTree<Key, Value>::iterator&
 BinarySearchTree<Key, Value>::iterator::operator++()
 {
 
-    Node<Key, Value>* next = BinarySearchTree<Key, Value>::successor(this->current_); 
-
+    Node<Key, Value>* next = BinarySearchTree<Key, Value>::successor(this->current_);
+    //std::cerr << "  next key" << next->getKey() << "  next " << next << std::endl;
     /*if a successor is not found, next = NULL*/
     this->current_ = next;
 }
@@ -418,6 +418,7 @@ template<class Key, class Value>
 typename BinarySearchTree<Key, Value>::iterator
 BinarySearchTree<Key, Value>::find(const Key & k) const
 {
+
     Node<Key, Value> *curr = internalFind(k);
     BinarySearchTree<Key, Value>::iterator it(curr);
     return it;
@@ -642,8 +643,8 @@ BinarySearchTree<Key, Value>::successor(Node<Key, Value>* current){
     Node<Key, Value>* temp = current;
 
     if(current->getRight() != NULL){
-        /*then there must be a successor*/
         
+        /*then there must be a successor*/
         temp = current->getRight(); 
 
         while(temp->getLeft() != NULL){ 
@@ -653,35 +654,25 @@ BinarySearchTree<Key, Value>::successor(Node<Key, Value>* current){
         return temp;
     }
     else if( current->getRight() == NULL ){
-      
-        if( current->getParent() == NULL){
-            /*when root is the only node of the tree*/
-            return NULL;
-        }
 
-        while(temp != NULL){         
-
+        while(temp != NULL){
+            
             if(temp->getParent() == NULL){
                 /*root reached and there is no sucessor*/
                 return NULL;    
             }
-
-            if(temp->getParent()->getLeft() == NULL){
-                /*temp's parenet does not have a left child, move up*/
-                temp = temp->getParent();
-                continue;
+            if( temp->getParent()->getLeft() != NULL ){
+                if( temp->getKey() == temp->getParent()->getLeft()->getKey() ){
+                    /*first left child found, its parent is successor*/
+                    temp = temp->getParent();
+                    return temp;
+                }
             }
-
-            if( temp->getKey() == temp->getParent()->getLeft()->getKey() ){
-                /*first left child found, its parent is successor*/
-                temp = temp->getParent();
-                return temp;
-            }
-
             /*else: left child not found, move up*/
-            temp = temp->getParent(); 
+            temp = temp->getParent();
         }
     }
+
 }
 
 
@@ -705,21 +696,23 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
     else if( current->getLeft() == NULL ){
 
         while(temp != NULL){
-           
-            if( temp->getKey() == temp->getParent()->getRight()->getKey() ){
-                /*first right child found, its parent is predecessor*/
-                temp = temp->getParent();
-                return temp;
+
+            if(temp->getParent() == NULL){
+                /*root reached and there is no predecessor*/
+                return NULL;    
+            }
+            if( temp->getParent()->getRight() != NULL ){
+                if( temp->getKey() == temp->getParent()->getRight()->getKey() ){
+                    /*first right child found, its parent is predecessor*/
+                    temp = temp->getParent();
+                    return temp;
+                }
             }
             /*else keep going up*/
             temp = temp->getParent(); 
         }
     }
 
-    /*if no predecessor*/
-    if(temp == NULL){
-        return NULL;
-    }
 
 }
 
@@ -837,6 +830,7 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
         return NULL;
     }
 
+
     while(true){
 
         if(temp->getKey() > key){ 
@@ -848,7 +842,7 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
             temp = temp->getLeft(); 
             continue;
         }
-        else if(temp->getKey() < key){ 
+        else if(temp->getKey() < key){
             if(temp->getRight() == NULL){
                 /*node not found*/
                 presence = false;
