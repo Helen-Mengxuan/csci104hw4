@@ -494,9 +494,7 @@ template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::remove(const Key& key)
 {
 
-    bool presence = true;
-
-    Node<Key, Value>* temp = internalFind(key);
+    Node<Key, Value>* temp = this->internalFind(key);
 
     /*if cannot find the node or empty tree, do nothing*/
     if(temp == NULL){
@@ -512,6 +510,7 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
 
     /*if leaf node*/
     if( (temp->getRight() == NULL) && (temp->getLeft() == NULL) ){
+
         /*root is the only node*/
         if(temp->getParent() == NULL){
             delete temp;
