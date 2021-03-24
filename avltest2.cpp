@@ -24,7 +24,7 @@ int main(){
     pair<int, int> N15(15, 15);
 
     mytree.insert(N1);
-    
+   
     mytree.insert(N2);
 
     mytree.insert(N3);

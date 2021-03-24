@@ -5,11 +5,11 @@ using namespace std;
 
 int main() {
 
-    AVLTree<int, int> mytree;
+    AVLTree<double, double> mytree;
 
-    pair<int, int> N1(1, 1);
-    pair<int, int> N2(2, 2);
-    pair<int, int> N3(3, 3);
+    pair<double, double> N1(1, 1);
+    pair<double, double> N2(2, 2);
+    pair<double, double> N3(3, 3);
 
     mytree.insert(N2);
     mytree.insert(N3);
