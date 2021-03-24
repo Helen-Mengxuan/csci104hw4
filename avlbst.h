@@ -217,9 +217,6 @@ void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>
         int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
         down->setHeight(down_now);
     }
-
-    
-
 }
 
 template<class Key, class Value>

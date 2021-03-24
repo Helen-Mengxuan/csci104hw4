@@ -342,6 +342,7 @@ BinarySearchTree<Key, Value>::iterator::operator++()
     //std::cerr << "  next key" << next->getKey() << "  next " << next << std::endl;
     /*if a successor is not found, next = NULL*/
     this->current_ = next;
+    return *this;
 }
 
 
@@ -673,6 +674,9 @@ BinarySearchTree<Key, Value>::successor(Node<Key, Value>* current){
         }
     }
 
+    /*compile warning*/
+    return temp;
+
 }
 
 
@@ -712,6 +716,9 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
             temp = temp->getParent(); 
         }
     }
+
+    /*compile warning*/
+    return temp;
 
 
 }
@@ -860,6 +867,10 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
     /*if cannot find the node, do nothing*/
     if(presence == false){
         return NULL;
+    }
+    /*compile warning*/
+    else{
+        return temp;
     }
     
 

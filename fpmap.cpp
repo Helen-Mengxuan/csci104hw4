@@ -1,4 +1,4 @@
-#include <fstream>
+﻿#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -20,8 +20,8 @@ struct Rectangle
 // try to use your AVL-tree map implementation by changing these
 // typedef's
 
-typedef AVLTree<int, Rectangle> InputMapType;
-typedef AVLTree<int, std::pair<int, int> > OutputMapType;
+typedef std::map<int, Rectangle> InputMapType;
+typedef std::map<int, std::pair<int, int> > OutputMapType;
 
 // Allowed global variables: the dimensions of the grid
 int n; // X-dim size
@@ -46,8 +46,6 @@ std::ostream& operator<<(std::ostream& os, const std::pair<T,U>& p)
     os << p.first << "," << p.second;
     return os;
 }
-
-
 
 void printSolution(std::ostream& os, InputMapType& input, OutputMapType& output)
 {
@@ -176,7 +174,7 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
                         rot_r.height = rot_height;
                         rot_r.length = rot_length;
                         /*update input*/
-                        input.insert(std::make_pair(rot_r.ID, rot_r));
+                        input[rot_r.ID] = rot_r;
                         cerr << "rotated LAST block update to input: " << curr->first << endl; 
                         return true;
                     }
@@ -193,7 +191,7 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
                             rot_r.length = rot_length;
                             rot_r.height = rot_height;
                             /*update input*/
-                            input.insert(std::make_pair(rot_r.ID, rot_r));                        
+                            input[rot_r.ID] = rot_r;                        
                             return true;
                         }
                         else if( !valid ){ /*consecutive block can not be placed*/
