@@ -86,13 +86,22 @@ void rot_filp(int x1, int y1, int height, int length, vector<vector<bool> >& gri
     }
 }
 
-bool check_fit(int curr_x, int curr_y, int curr_h, int curr_l){
+bool check_fit(int curr_x, int curr_y, int curr_h, int curr_l, vector<vector<bool> >& grid){
 
     cerr << "check fit: curr_x " << curr_x << "  curr_y: " << curr_y << endl;
-    cerr << "check fit: length: " << curr_l << "  height: " << curr_h << endl;
+    /*cerr << "check fit: length: " << curr_l << "  height: " << curr_h << endl;*/
 
     if( ((n - curr_x) >= curr_l) && ( (m - curr_y) >= curr_h) ){
-            return true;
+        for (int x = curr_x; x < curr_x+curr_l; x++){
+            for (int y = curr_y; y < curr_y+curr_h; y++){
+                if(grid[x][y]){
+                    /*occupied!*/
+                    return false;
+                }
+            }
+        }
+        /*all space neede can be allocated to this block*/
+        return true;
     }
     else{
             return false;
@@ -100,9 +109,6 @@ bool check_fit(int curr_x, int curr_y, int curr_h, int curr_l){
 }
 
 // TODO: Write your backtracking search function here
-
-// pass in: it, input, output, grid
-// "it" points to the rectangle object in each call
 
 bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& output, vector<vector<bool> >& grid)
 {
@@ -121,7 +127,8 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
             /*if the position not occupied*/
             if( !grid[x][y] ){
 
-                if( check_fit(x, y, curr_height, curr_length) ){
+                cerr << "ori block " << curr->first << endl;
+                if( check_fit(x, y, curr_height, curr_length, grid) ){
                     /*there is enough space, occupy this space*/
                     flip(x, y, it->second, grid);
                     /*check for next block*/ 
@@ -146,17 +153,16 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
                         else if( !valid ){ /*consecutive block can not be placed*/
                             /*restore grid, move on to check roatated orientation*/
                             flip(x, y, curr->second, grid);
+                            cerr << endl;
                         }
                     }
                 }
                 it = curr;
                 /*original orientation failed to fit; rotate*/
                 cerr << "rotate block: " << it->first << endl;
-
-                if( check_fit(x, y, rot_height, rot_length) ){
+                if( check_fit(x, y, rot_height, rot_length, grid) ){
 
                     /*fit after rotation; occupy this space*/
-                    cout << "------ rot_length: " << rot_length << " rot_height: " << rot_height << endl;
                     rot_filp(x, y, rot_height, rot_length, grid);
 
                     /*check for next block*/
@@ -169,7 +175,8 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
                         rot_r.ID = curr->first;
                         rot_r.height = rot_height;
                         rot_r.length = rot_length;
-                        input.insert(std::make_pair(rot_r.ID, rot_r));
+                        /*update input*/
+                        input[rot_r.ID] = rot_r;
                         cerr << "rotated LAST block update to input: " << curr->first << endl; 
                         return true;
                     }
@@ -183,10 +190,10 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
                             /*rotated orientation valid, update input*/
                             Rectangle rot_r;
                             rot_r.ID = curr->first;
-                            rot_r.height = rot_height;
                             rot_r.length = rot_length;
-                            input.insert(std::make_pair(rot_r.ID, rot_r));
-                            cerr << "rotated block update to input: " << curr->first << endl;                            
+                            rot_r.height = rot_height;
+                            /*update input*/
+                            input[rot_r.ID] = rot_r;                        
                             return true;
                         }
                         else if( !valid ){ /*consecutive block can not be placed*/
@@ -195,6 +202,7 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
                         }
                     }
                 }
+                it = curr;
                 /*current position not valid, move on to next position*/
             }
         }
