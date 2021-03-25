@@ -5,7 +5,7 @@ using namespace std;
 
 int main(){
 
-    BinarySearchTree<int, int> mytree;
+    BinarySearchTree<int, int> mytree;s
 
     pair<int, int> N1(1, 1);
     pair<int, int> N2(2, 2);

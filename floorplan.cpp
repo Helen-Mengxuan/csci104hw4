@@ -5,6 +5,7 @@
 #include <cstring>
 #include "avlbst.h"
 #include <map>
+#include "print_bst.h"
 
 using namespace std;
 
@@ -66,7 +67,8 @@ void printSolution(std::ostream& os, InputMapType& input, OutputMapType& output)
 // rectangle r starting at x1,y1
 void flip(int x1, int y1, const Rectangle& r, vector<vector<bool> >& grid)
 {
-    cerr << "filp: length: " << r.length << "  height: " << r.height << endl;
+    //cerr << "filp: x " << x1 << " y " << y1 << endl;
+    //cerr << "filp: length: " << r.length << "  height: " << r.height << endl;
 
     for (int x = x1; x < x1+r.length; x++)
     {
@@ -77,8 +79,8 @@ void flip(int x1, int y1, const Rectangle& r, vector<vector<bool> >& grid)
 /*filp function for rotated block*/
 void rot_filp(int x1, int y1, int height, int length, vector<vector<bool> >& grid)
 {
-
-    cerr << "rot_filp: length: " << length << "  height: " << height << endl;
+    //cerr << "rot_filp: x " << x1 << " y " << y1 << endl;
+    //cerr << "rot_filp: length: " << length << "  height: " << height << endl;
 
     for (int x = x1; x < x1+length; x++)
     {
@@ -88,10 +90,17 @@ void rot_filp(int x1, int y1, int height, int length, vector<vector<bool> >& gri
 
 bool check_fit(int curr_x, int curr_y, int curr_h, int curr_l, vector<vector<bool> >& grid){
 
-    cerr << "check fit: curr_x " << curr_x << "  curr_y: " << curr_y << endl;
-    /*cerr << "check fit: length: " << curr_l << "  height: " << curr_h << endl;*/
+    //cerr << "check fit: curr_x " << curr_x << "  curr_y: " << curr_y << endl;
+    //cerr << "check fit: length: " << curr_l << "  height: " << curr_h << endl;
+
+    // h = 1, l = 3, x = 4, y = 3; n = 6, m = 6
+    // n-x = 2, m-y = 3
 
     if( ((n - curr_x) >= curr_l) && ( (m - curr_y) >= curr_h) ){
+        //cerr << "why???" << endl;
+        //cerr << "n - curr_x = " << n - curr_x << "  curr_l: " << curr_l << endl;
+        //cerr << "n - curr_x = " << n - curr_x << "  curr_l: " << curr_l << endl;
+        /*block is within boundary from the location put down*/
         for (int x = curr_x; x < curr_x+curr_l; x++){
             for (int y = curr_y; y < curr_y+curr_h; y++){
                 if(grid[x][y]){
@@ -104,7 +113,7 @@ bool check_fit(int curr_x, int curr_y, int curr_h, int curr_l, vector<vector<boo
         return true;
     }
     else{
-            return false;
+         return false;
     }
 }
 
@@ -112,6 +121,12 @@ bool check_fit(int curr_x, int curr_y, int curr_h, int curr_l, vector<vector<boo
 
 bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& output, vector<vector<bool> >& grid)
 {
+
+    if( it == input.end() ){
+        /*the last block is placed at valid location*/
+        return true;
+    }    
+
     InputMapType::iterator curr = it;
     bool valid = false;
     int curr_height = it->second.height;
@@ -119,7 +134,7 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
     int rot_height = curr_length;
     int rot_length = curr_height;
 
-    cerr << "current block " << curr->first << endl;
+    //cerr << "current block " << curr->first << endl; //7
 
     for(int x = 0; x < n; x++){
         for(int y = 0; y < m; y++){
@@ -127,39 +142,32 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
             /*if the position not occupied*/
             if( !grid[x][y] ){
 
-                cerr << "ori block " << curr->first << endl;
+                //cerr << "ori block " << curr->first << endl;
                 if( check_fit(x, y, curr_height, curr_length, grid) ){
                     /*there is enough space, occupy this space*/
                     flip(x, y, it->second, grid);
+
                     /*check for next block*/ 
                     ++it;
-                    if( it == input.end() ){
-                        /*this is the last block, and valid*/
-                        output.insert( std::make_pair(curr->first, std::make_pair(x, y)));
+                    valid = check_next(it, input, output, grid);
+
+                    if( valid ){
+                        /*all blocks left can fit, solution found*/         
+                        /*cuurent position is valid*/
+                        output.insert( std::make_pair(curr->first, std::make_pair(x, y)) );
+                        //cerr << "block insert to output: " << curr->first << endl;
                         /*original orientation valid*/
-                        cerr << "ori-orien LAST block no need to update input" << endl;
                         return true;
                     }
-                    else{ /*it != end, still blocks left*/
-                        valid = check_next(it, input, output, grid);
-                        if( valid ){
-                            /*all blocks left can fit, solution found*/         
-                            /*cuurent position is valid*/
-                            output.insert( std::make_pair(curr->first, std::make_pair(x, y)) );
-                            cerr << "block insert to output: " << curr->first << endl;
-                            /*original orientation valid*/
-                            return true;
-                        }
-                        else if( !valid ){ /*consecutive block can not be placed*/
-                            /*restore grid, move on to check roatated orientation*/
-                            flip(x, y, curr->second, grid);
-                            cerr << endl;
-                        }
+                    else if( !valid ){ /*consecutive block can not be placed*/
+                        /*restore grid, move on to check roatated orientation*/
+                        flip(x, y, curr->second, grid);
                     }
+                    it = curr;
+                    /*original orientation failed to fit; rotate*/
                 }
-                it = curr;
-                /*original orientation failed to fit; rotate*/
-                cerr << "rotate block: " << it->first << endl;
+                //cerr << "rotate block: " << it->first << endl;
+
                 if( check_fit(x, y, rot_height, rot_length, grid) ){
 
                     /*fit after rotation; occupy this space*/
@@ -167,54 +175,42 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
 
                     /*check for next block*/
                     ++it;
-                    if( it == input.end() ){
-                        /*this is the last block, and valid*/
+                        valid = check_next(it, input, output, grid);
+                    if( valid ){
+                        /*all blocks left can fit, solution found*/         
+                        /*current position is valid, update output*/
                         output.insert( std::make_pair(curr->first, std::make_pair(x, y)));
+                        ////cerr << "block insert to output: " << curr->first << endl;
                         /*rotated orientation valid, update input*/
                         Rectangle rot_r;
                         rot_r.ID = curr->first;
-                        rot_r.height = rot_height;
                         rot_r.length = rot_length;
+                        rot_r.height = rot_height;
                         /*update input*/
-                        input.insert(std::make_pair(rot_r.ID, rot_r));
-                        cerr << "rotated LAST block update to input: " << curr->first << endl; 
+                        input.insert(std::make_pair(rot_r.ID, rot_r));                        
                         return true;
+                    }                        
+                    else if( !valid ){ /*consecutive block can not be placed*/
+                        /*restore grid*/
+                        rot_filp(x, y, rot_height, rot_length, grid);
                     }
-                    else{ /*it != end, still blocks left*/
-                        valid = check_next(it, input, output, grid);
-                        if( valid ){
-                            /*all blocks left can fit, solution found*/         
-                            /*current position is valid, update output*/
-                            output.insert( std::make_pair(curr->first, std::make_pair(x, y)));
-                            cerr << "block insert to output: " << curr->first << endl;
-                            /*rotated orientation valid, update input*/
-                            Rectangle rot_r;
-                            rot_r.ID = curr->first;
-                            rot_r.length = rot_length;
-                            rot_r.height = rot_height;
-                            /*update input*/
-                            input.insert(std::make_pair(rot_r.ID, rot_r));                        
-                            return true;
-                        }
-                        else if( !valid ){ /*consecutive block can not be placed*/
-                            /*restore grid*/
-                            rot_filp(x, y, rot_height, rot_length, grid);
-                        }
-                    }
+                    it = curr;
+                    /*current position not valid, move on to next position*/
                 }
-                it = curr;
-                /*current position not valid, move on to next position*/
+
             }
         }
     }
     /*no position is valid*/
-    return false;
+    //cerr << "no position left" << endl;
+    return false; 
 }
 
 int main(int argc, char *argv[])
 {
     if (argc < 3) {
-        cout << "please specify an input and output file";
+        //cout << "please specify an input and output file";
+
         return 0;
     }
     ifstream ifile(argv[1]);
@@ -224,6 +220,7 @@ int main(int argc, char *argv[])
     int x;
     getline(ifile, line);
     ss << line;
+    //cerr << "line: " << line << endl;
     ss >> n;
     ss >> m;
     ss >> x;
@@ -241,12 +238,15 @@ int main(int argc, char *argv[])
     }
     ifile.close();
     vector<vector<bool> > grid;
+    /* //cerr !*/
+    input.print();
 
     for (int i = 0; i < n; i++)
     {
         grid.push_back(vector<bool>(m, false));
     }
     InputMapType::iterator it = input.begin();
+
     bool solution_exists = false;
 
     // TODO:  Call your backtracking search function here
@@ -260,5 +260,12 @@ int main(int argc, char *argv[])
         printSolution(ofile, input, output);
     }
     ofile.close();
+
+
+    /* //cerr !*/
+    input.print();
+    output.print();
+
+
     return 0;
 }

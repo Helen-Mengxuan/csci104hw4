@@ -339,7 +339,7 @@ BinarySearchTree<Key, Value>::iterator::operator++()
 {
 
     Node<Key, Value>* next = BinarySearchTree<Key, Value>::successor(this->current_);
-    //std::cerr << "  next key" << next->getKey() << "  next " << next << std::endl;
+    //std:://cerr << "  next key" << next->getKey() << "  next " << next << std::endl;
     /*if a successor is not found, next = NULL*/
     this->current_ = next;
     return *this;
@@ -507,7 +507,7 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
 
     /* temp->getKey() == key */
     if( temp->getKey() != key ){
-        std::cerr << "incorrect node but should be correct!" << std::endl;
+        //std::cerr << "incorrect node but should be correct!" << std::endl;
     }
 
     /*if leaf node*/

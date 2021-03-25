@@ -51,7 +51,6 @@ template<class Key, class Value>
 AVLNode<Key, Value>::AVLNode(const Key& key, const Value& value, AVLNode<Key, Value> *parent) :
     Node<Key, Value>(key, value, parent), height_(1)
 {
-
 }
 
 /**
@@ -131,7 +130,47 @@ protected:
     void left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
     void right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
     void remove_fix(AVLNode<Key,Value>* n);
+    void update_height(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down);
+
 };
+
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::update_height(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down){
+
+    if( up->getLeft() == NULL && up->getRight() == NULL ){
+        /*leaf node*/  
+        up->setHeight(1);
+    }
+    else if( up->getLeft() == NULL && up->getRight() != NULL ){
+        /*right child exists*/
+        up->setHeight(up->getRight()->getHeight()+1);
+    }
+    else if( up->getLeft() != NULL && up->getRight() == NULL ){
+        /*left child exists*/
+        up->setHeight(up->getLeft()->getHeight()+1);
+    }
+    else{
+        /*both children exists*/
+        int up_now = std::max(up->getLeft()->getHeight(),up->getRight()->getHeight()) + 1;
+        up->setHeight(up_now);
+    }
+
+    /*left rotation, left child(g) always exist */
+    if( (down->getRight() == NULL) && (down->getLeft() != NULL) ){
+        /*Left rotation, Right NOT exists*/
+        down->setHeight(down->getLeft()->getHeight()+1);
+    }
+    else if( (down->getLeft() == NULL) &&  (down->getRight() != NULL) ){
+        /*right rotation, left NOT exists*/
+         down->setHeight(down->getRight()->getHeight()+1);
+    }
+    else{
+         /*both children exists*/
+        int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
+        down->setHeight(down_now);
+    }
+}
 
 template<class Key, class Value>
 void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>* down)
@@ -140,7 +179,6 @@ void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>
     /*Because root node's parent is not root_ */
     bool up_root = false;
     if( this->root_ == up ){
-        std::cerr << "up is root " << std::endl;
         up_root = true;
     }
 
@@ -183,40 +221,12 @@ void AVLTree<Key, Value>::left_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value>
 
     /*if up were root, now down is root*/
     if( up_root == true){
-        std::cerr << "now down is root " << std::endl;
         this->root_ = down;
     }
 
     /*4. check NULL for children, then recalculate height*/
+    update_height(up, down);
 
-    if( up->getLeft() == NULL && up->getRight() == NULL ){
-        /*leaf node*/  
-        up->setHeight(1);
-    }
-    else if( up->getLeft() == NULL && up->getRight() != NULL ){
-        /*right child exists*/
-        up->setHeight(up->getRight()->getHeight()+1);
-    }
-    else if( up->getLeft() != NULL && up->getRight() == NULL ){
-        /*left child exists*/
-        up->setHeight(up->getLeft()->getHeight()+1);
-    }
-    else{
-        /*both children exists*/
-        int up_now = std::max(up->getLeft()->getHeight(),up->getRight()->getHeight()) + 1;
-        up->setHeight(up_now);
-    }
-
-    /*left rotation, left child(g) always exist */
-    if( down->getRight() == NULL ){
-        /*Right NOT exists*/
-        down->setHeight(down->getLeft()->getHeight()+1);
-    }
-    else{
-         /*both children exists*/
-        int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
-        down->setHeight(down_now);
-    }
 }
 
 template<class Key, class Value>
@@ -252,7 +262,6 @@ void AVLTree<Key, Value>::right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value
         down->setParent(NULL);
     }
 
-
     /* 2. deal with the lower layer*/
     if( down->getRight() != NULL ){
         up->setLeft(down->getRight());
@@ -263,7 +272,6 @@ void AVLTree<Key, Value>::right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value
         up->setLeft(NULL);
     }
 
-
     /* 3. between rotating nodes*/
     up->setParent(down);
     down->setRight(up);
@@ -273,37 +281,9 @@ void AVLTree<Key, Value>::right_rotate(AVLNode<Key,Value>* up, AVLNode<Key,Value
         this->root_ = down;
     }
 
-
     /*4. check NULL for children, then recalculate height*/
+    update_height(up, down);
 
-    if( up->getLeft() == NULL && up->getRight() == NULL ){
-        /*leaf node*/  
-        up->setHeight(1);
-    }
-    else if( up->getLeft() == NULL && up->getRight() != NULL ){
-        /*right child exists*/
-        up->setHeight(up->getRight()->getHeight()+1);
-    }
-    else if( up->getLeft() != NULL && up->getRight() == NULL ){
-        /*left child exists*/
-        up->setHeight(up->getLeft()->getHeight()+1);
-    }
-    else{
-        /*both children exists*/
-        int up_now = std::max(up->getLeft()->getHeight(),up->getRight()->getHeight()) + 1;
-        up->setHeight(up_now);
-    }
-
-    /*right rotation, right child(g) always exist */
-    if( down->getLeft() == NULL ){
-        /*Left NOT exists*/
-        down->setHeight(down->getRight()->getHeight()+1);
-    }
-    else{
-        /*both children exists*/
-        int down_now = std::max(down->getLeft()->getHeight(),down->getRight()->getHeight()) + 1;
-        down->setHeight(down_now);
-    }
 }
 
 /*this function should call the rotation functions and finish rotation*/
@@ -432,6 +412,8 @@ void AVLTree<Key, Value>::insert(const std::pair<const Key, Value> &new_item)
         return;
     }*/
 
+    std::cerr << "in avl insert" << std::endl;
+
     /*root_ is a Node, but point to an AVLNode*/
     AVLNode<Key,Value>* temp = static_cast<AVLNode<Key,Value>*>(this->root_);
 
@@ -544,7 +526,6 @@ void AVLTree<Key, Value>::remove_fix(AVLNode<Key,Value>* n)
     }
     else if( n_status == 1){
         /*n only has a left child*/
-        std::cerr << "5 only has a left child" << std::endl;
         if( n->getLeft()->getHeight() == 1 ){
             balance = true;
         }        
