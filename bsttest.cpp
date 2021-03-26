@@ -5,7 +5,7 @@ using namespace std;
 
 int main(){
 
-    BinarySearchTree<int, int> mytree;s
+    BinarySearchTree<int, int> mytree;
 
     pair<int, int> N1(1, 1);
     pair<int, int> N2(2, 2);
@@ -100,6 +100,24 @@ int main(){
     }
     mytree.remove(1);
     mytree.print();
+
+
+    cout << "one node" << endl;
+    BinarySearchTree<int, int> onenode;
+    pair<int, int> O1(1, 1);
+    pair<int, int> O2(2, 2);
+    pair<int, int> O3(3, 3);
+    pair<int, int> O4(4, 4);
+    onenode.insert(O4);   
+    onenode.insert(O2);
+    onenode.insert(O3);
+    onenode.insert(O1);
+    onenode.print();
+    cout << "balance: " << onenode.isBalanced() << endl;
+    onenode.clear();
+    onenode.print();
+
+
 
     return 0;
 }

@@ -142,7 +142,6 @@ bool check_next(InputMapType::iterator it, InputMapType& input, OutputMapType& o
             /*if the position not occupied*/
             if( !grid[x][y] ){
 
-                //cerr << "ori block " << curr->first << endl;
                 if( check_fit(x, y, curr_height, curr_length, grid) ){
                     /*there is enough space, occupy this space*/
                     flip(x, y, it->second, grid);
